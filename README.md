@@ -1,9 +1,13 @@
-# elm-http-chain-example
+# Eheza Elm Challenge
 
-Example of how to chain HTTP requests in Elm
+This program Fetch Stories content IDs on the [HackerNews Top Stories API ](https://hacker-news.firebaseio.com/v0/topstories.json)
 
-Run with for example [elm-live](https://github.com/wking-io/elm-live)
+After Fectching IDs it fetch their stories from [Hacker News Story API](https://hacker-news.firebaseio.com/v0/item/{Story ID}.json) 
 
+# Program Requirements
+
+## Elm 0.19.1
+To install use:
 ```sh
-$ elm-live src/Main.elm
+$ npm install create-elm-app -g
 ```
