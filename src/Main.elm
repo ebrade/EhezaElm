@@ -1,6 +1,7 @@
 module Main exposing (main)
 
 import Browser
+import Debug exposing (toString)
 import Html exposing (Html, button, div, li, text, ul)
 import Html.Events exposing (onClick)
 import Http
@@ -25,13 +26,14 @@ type Msg
     | StoriesFetched (WebData (List Story))
 
 
+--- Getting All Top Stories IDs From Hacker News Top Story API ---
 fetchTopStoryIDs : Task Http.Error (List Int)
 fetchTopStoryIDs =
     HttpBuilder.get "https://hacker-news.firebaseio.com/v0/topstories.json"
         |> HttpBuilder.withExpectJson (Json.Decode.list Json.Decode.int)
         |> HttpBuilder.toTask
 
-
+--- Getting A Story Content Using Hacker News Story API---
 fetchCurrentStory : Int -> Task Http.Error Story
 fetchCurrentStory int =
     HttpBuilder.get ("https://hacker-news.firebaseio.com/v0/item/" ++ String.fromInt(int) ++ ".json")
@@ -39,8 +41,9 @@ fetchCurrentStory int =
         |> HttpBuilder.toTask
 
 
-fetchstories : Cmd Msg
-fetchstories =
+--- Fetching All Stories As A list of the Story Type ---
+fetchStories : Cmd Msg
+fetchStories =
     fetchTopStoryIDs
         |> Task.andThen
             (\topStoryIDs ->
@@ -52,12 +55,13 @@ fetchstories =
         |> Cmd.map StoriesFetched
 
 
+--- Update ---
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         FetchClick ->
             ( { model | stories = Loading }
-            , fetchstories
+            , fetchStories
             )
 
         StoriesFetched stories ->
@@ -66,6 +70,7 @@ update msg model =
             )
 
 
+--- Model ---
 view : Model -> Html Msg
 view model =
     div []
@@ -74,18 +79,21 @@ view model =
                 button [ onClick FetchClick ] [ text "Fetch stories" ]
 
             Loading ->
-                text "Loading..."
+                text "Loading Stories From the HackerNews APi..."
 
             Success stories ->
                 ul [] <|
                     List.map
                         (\story ->
-                            li [] [ text story.title ]
+                            li []
+                                [ text (toString story) ]
+
                         )
                         stories
 
             Failure err ->
                 text <| Debug.toString err
+
         ]
 
 
@@ -120,5 +128,6 @@ decodeStory =
         |> Json.Decode.Pipeline.required "time" Json.Decode.int
         |> Json.Decode.Pipeline.required "title" Json.Decode.string
         |> Json.Decode.Pipeline.required "url" Json.Decode.string
+
 
 
