@@ -1,8 +1,12 @@
 module Main exposing (main)
 
+import Bootstrap.Button as Button
+import Bootstrap.Card as Card
+import Bootstrap.Card.Block as Block
 import Browser
 import Debug exposing (toString)
-import Html exposing (Html, button, div, li, text, ul)
+import Html exposing (Html, button, div, input, li, text, ul)
+import Html.Attributes exposing (align, class, placeholder)
 import Html.Events exposing (onClick)
 import Http
 import HttpBuilder
@@ -76,20 +80,36 @@ view model =
     div []
         [ case model.stories of
             NotAsked ->
-                button [ onClick FetchClick ] [ text "Fetch stories" ]
+
+                Card.config []
+                    |> Card.block []
+                        [ Block.titleH4 [] [ text "E-Heza Elm Challenge" ]
+                        , Block.text [] [ text "Welcome! Click Button Bellow to Get top Stories From Hacker News." ]
+                        , Block.custom
+                        <| Button.button [ Button.onClick FetchClick, Button.success ]
+                            [ text "Fetch Hacker New Top stories" ]
+
+                        ]
+                    |> Card.view
 
             Loading ->
                 text "Loading Stories From the HackerNews APi..."
 
             Success stories ->
-                ul [] <|
-                    List.map
-                        (\story ->
-                            li []
-                                [ text (toString story) ]
+                div[][text ("All Top Stories From Hacker News")
+                ,div[class "row d-flex justify-content-center"][
+                    ul [class "list-group col-md-8"] <|
+                        List.map
+                            (\story ->
+                                li [class "list-group-item border-dark"]
+                                    [ li[class "list-group-item"][text ("Posted By: " ++  story.by)]
+                                    , li [class "list-group-item"][text ("Story Title: " ++ story.title )]
+                                    , li [class "list-group-item"][input [class "col-md-6",placeholder "Enter Your notes"][] ]
+                                     ]
 
-                        )
-                        stories
+                            )
+                            stories
+                ]]
 
             Failure err ->
                 text <| Debug.toString err
@@ -109,12 +129,7 @@ main =
 
 type alias Story =
     { by : String
-    , descendants : Int
-    , id : Int
-    , score : Int
-    , time : Int
     , title : String
-    , url : String
     }
 
 
@@ -122,12 +137,7 @@ decodeStory : Json.Decode.Decoder Story
 decodeStory =
     Json.Decode.succeed Story
         |> Json.Decode.Pipeline.required "by" Json.Decode.string
-        |> Json.Decode.Pipeline.required "descendants" Json.Decode.int
-        |> Json.Decode.Pipeline.required "id" Json.Decode.int
-        |> Json.Decode.Pipeline.required "score" Json.Decode.int
-        |> Json.Decode.Pipeline.required "time" Json.Decode.int
         |> Json.Decode.Pipeline.required "title" Json.Decode.string
-        |> Json.Decode.Pipeline.required "url" Json.Decode.string
 
 
 
